@@ -10,26 +10,31 @@ void initialize(u_char *State);
 void swap(u_char *a, u_char *b);
 void ksa(u_char *State, u_char *key, int keylen) ;
 u_char * prng(u_char *State, int msglength);
-void rc4(u_char *key, u_char *input, u_char *output, int keylen);
+void rc4(u_char *key, u_char *input, u_char *output, int keylen, int msglen);
 
 int main(int argc, char *argv[]) {
 	
 	u_char input[4096];		// The input data
 	u_char output[4096];	// The output
+	int msglength = strlen(argv[1]);
 	strncpy((char *) input, argv[1], 4096);
-	u_char key[]={0x01,0x02,0x03,0x04,0x05,0x06,0x07};		// The encryption/decryption key 
+	u_char key[]={0x01,0x02,0x03,0x04,0x05,0x06,0x07, 0x08};		// The encryption/decryption key 
 	// se puede cambiar la Key a cualquiera que esté en los vectores de prueba de 
 	int keylength = sizeof(key)/sizeof(key[0]);
 	
 	// encrypt
 
-	rc4(key, input, output, keylength);
+	rc4(key, input, output, keylength, msglength);
 	
 
 	int i = 0;
 	printf("\n\n--- Encryption ---");
 	printf("\nOutput:\n");
-	for(i=0; i<strlen((char *) input); i++) {
+	for(i=0; i<msglength; i++) {
+		if(i%16==0){
+			printf("\n");
+			printf("%d:\t", i);
+		}
 		if(output[i]<16)
 			printf("0%0x ", output[i]);
 		else
@@ -39,7 +44,7 @@ int main(int argc, char *argv[]) {
 
 	
 	// decrypt
-	rc4(key, output, input, keylength); 
+	rc4(key, output, input, keylength,msglength); 
 
 
 	printf("\n\n--- Decryption ---");
@@ -94,7 +99,7 @@ u_char * prng(u_char *State, int msglength) {
 	
 	keystream = (u_char *)malloc(sizeof(u_char)*msglength);
 	
-	for(k=0; k<4096; k++) {
+	for(k=0; k<msglength; k++) {
 		i = (i+1) % 256;
 		j = (j+State[i]) % 256;
 		
@@ -106,7 +111,7 @@ u_char * prng(u_char *State, int msglength) {
 }
 
 /* Encrypt or Decrypt */
-void rc4(u_char *key, u_char *input, u_char *output, int keylen) {
+void rc4(u_char *key, u_char *input, u_char *output, int keylen, int msglen) {
 	int i;
 	u_char State[256];
 	u_char *keystream;
@@ -114,14 +119,14 @@ void rc4(u_char *key, u_char *input, u_char *output, int keylen) {
 	initialize(State);
 	
 	ksa(State, key, keylen);
-	int msglen = strlen((char*)input);
 	printf("\n--- Tamaño del mensaje %d\n", msglen);
 	keystream = prng(State, msglen);
 	
 	for(i=0; i<msglen; i++)
 		output[i] = input[i] ^ keystream[i];
 	
-	printf("\n--- Key Generation ---\nKey: %s\n", key);
+	printf("\n--- Key Generation ---\nKey: %s\n\n", key);
+	
 	printf("Keystream:\n");
 	for(i=0; i<msglen; i++) {
 		if(i%16==0){
