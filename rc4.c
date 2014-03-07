@@ -17,7 +17,8 @@ int main(int argc, char *argv[]) {
 	u_char input[4096];		// The input data
 	u_char output[4096];	// The output
 	strncpy((char *) input, argv[1], 4096);
-	u_char key[]={0x01,0x02,0x03,0x04,0x05,0x06,0x07};		// The encryption/decryption key
+	u_char key[]={0x01,0x02,0x03,0x04,0x05,0x06,0x07};		// The encryption/decryption key 
+	// se puede cambiar la Key a cualquiera que esté en los vectores de prueba de 
 	int keylength = sizeof(key)/sizeof(key[0]);
 	
 	// encrypt
